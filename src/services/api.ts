@@ -1,12 +1,13 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { ModelType } from '../components/InputPanel';
+import type { ProviderType } from '../components/InputPanel';
 
 const SYSTEM_PROMPT = `You are a resume expert. Update the provided LaTeX code to tailor the experience bullet points to match the keywords in the Job Description. Do NOT change the LaTeX structure, preamble, or formatting. Only change the content text. Return ONLY the raw LaTeX code.`;
 
 export async function generateResume(
     originalResume: string,
     jobDescription: string,
-    model: ModelType,
+    provider: ProviderType,
+    modelId: string,
     apiKeys: { geminiKey: string; perplexityKey: string }
 ): Promise<string> {
     const prompt = `
@@ -17,21 +18,21 @@ export async function generateResume(
     ${jobDescription}
   `;
 
-    if (model === 'gemini') {
+    if (provider === 'gemini') {
         if (!apiKeys.geminiKey) throw new Error('Gemini API Key is missing');
 
         const genAI = new GoogleGenerativeAI(apiKeys.geminiKey);
-        const modelInstance = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Use the specific modelId selected by the user
+        const modelInstance = genAI.getGenerativeModel({ model: modelId });
 
         const result = await modelInstance.generateContent([SYSTEM_PROMPT, prompt]);
         const response = await result.response;
         const text = response.text();
 
-        // Cleanup markdown code blocks if present
         return cleanResponse(text);
     }
 
-    if (model === 'perplexity') {
+    if (provider === 'perplexity') {
         if (!apiKeys.perplexityKey) throw new Error('Perplexity API Key is missing');
 
         const options = {
@@ -41,7 +42,7 @@ export async function generateResume(
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "sonar-pro",
+                model: modelId, // Use the specific modelId (e.g. sonar-pro, sonar-reasoning)
                 messages: [
                     { role: "system", content: SYSTEM_PROMPT },
                     { role: "user", content: prompt }
@@ -61,7 +62,7 @@ export async function generateResume(
         return cleanResponse(data.choices[0].message.content);
     }
 
-    throw new Error('Invalid model selected');
+    throw new Error('Invalid provider selected');
 }
 
 function cleanResponse(text: string): string {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from './components/Layout';
 import { ApiKeyModal } from './components/ApiKeyModal';
-import { InputPanel, type ModelType } from './components/InputPanel';
+import { InputPanel, type ProviderType, MODELS } from './components/InputPanel';
 import { OutputPanel } from './components/OutputPanel';
 import { generateResume } from './services/api';
 import { getStoredKeys } from './lib/storage';
@@ -13,7 +13,11 @@ function App() {
   // State for inputs
   const [masterResume, setMasterResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [model, setModel] = useState<ModelType>('gemini');
+
+  // New state for Provider + Model
+  const [provider, setProvider] = useState<ProviderType>('gemini');
+  // Default to the first model of the default provider
+  const [modelId, setModelId] = useState<string>(MODELS.gemini[0].id);
 
   // State for output
   const [generatedCode, setGeneratedCode] = useState('');
@@ -26,12 +30,13 @@ function App() {
 
     try {
       const keys = getStoredKeys();
-      if ((model === 'gemini' && !keys.geminiKey) || (model === 'perplexity' && !keys.perplexityKey)) {
+      if ((provider === 'gemini' && !keys.geminiKey) || (provider === 'perplexity' && !keys.perplexityKey)) {
         setIsSettingsOpen(true);
-        throw new Error(`Please configure your ${model === 'gemini' ? 'Gemini' : 'Perplexity'} API Key in settings.`);
+        throw new Error(`Please configure your ${provider === 'gemini' ? 'Gemini' : 'Perplexity'} API Key in settings.`);
       }
 
-      const result = await generateResume(masterResume, jobDescription, model, keys);
+      // Pass both provider and specific modelId
+      const result = await generateResume(masterResume, jobDescription, provider, modelId, keys);
       setGeneratedCode(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -62,8 +67,10 @@ function App() {
             setMasterResume={setMasterResume}
             jobDescription={jobDescription}
             setJobDescription={setJobDescription}
-            model={model}
-            setModel={setModel}
+            provider={provider}
+            setProvider={setProvider}
+            modelId={modelId}
+            setModelId={setModelId}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
           />
