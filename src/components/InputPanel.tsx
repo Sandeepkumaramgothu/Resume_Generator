@@ -5,14 +5,18 @@ export type ProviderType = 'gemini' | 'perplexity';
 
 export const MODELS = {
     gemini: [
-        { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash Exp (Latest)' },
-        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Reasoning)' },
-        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Fast)' },
+        { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro (Preview)' },
+        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash (Fast)' },
+        { id: 'gemini-2.5-pro-preview', name: 'Gemini 2.5 Pro' },
+        { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+        { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite' },
+        { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash Exp (Stable)' },
     ],
     perplexity: [
-        { id: 'sonar-pro', name: 'Sonar Pro (Best)' },
+        { id: 'sonar-deep-research', name: 'Sonar Deep Research' },
+        { id: 'sonar-reasoning-pro', name: 'Sonar Reasoning Pro' },
         { id: 'sonar-reasoning', name: 'Sonar Reasoning' },
-        { id: 'sonar', name: 'Sonar (Fast)' },
+        { id: 'sonar-pro', name: 'Sonar Pro' },
     ]
 };
 
@@ -69,8 +73,8 @@ export function InputPanel({
                 <button
                     onClick={() => setDocType('resume')}
                     className={`flex-1 py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-all ${docType === 'resume'
-                            ? 'bg-slate-800 text-white shadow-sm'
-                            : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-slate-800 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
                         }`}
                 >
                     <FileUser className="w-4 h-4" />
@@ -79,8 +83,8 @@ export function InputPanel({
                 <button
                     onClick={() => setDocType('cover_letter')}
                     className={`flex-1 py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-all ${docType === 'cover_letter'
-                            ? 'bg-slate-800 text-white shadow-sm'
-                            : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-slate-800 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
                         }`}
                 >
                     <FileText className="w-4 h-4" />
@@ -125,8 +129,8 @@ export function InputPanel({
                         <button
                             onClick={() => handleProviderChange('gemini')}
                             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${provider === 'gemini'
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-                                    : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
+                                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
                                 }`}
                         >
                             Gemini
@@ -134,8 +138,8 @@ export function InputPanel({
                         <button
                             onClick={() => handleProviderChange('perplexity')}
                             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${provider === 'perplexity'
-                                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/20'
-                                    : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/20'
+                                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
                                 }`}
                         >
                             Perplexity
