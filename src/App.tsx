@@ -3,7 +3,7 @@ import { Layout } from './components/Layout';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { InputPanel, type ProviderType, MODELS } from './components/InputPanel';
 import { OutputPanel } from './components/OutputPanel';
-import { generateResume } from './services/api';
+import { generateDocument, type DocumentType } from './services/api';
 import { getStoredKeys } from './lib/storage';
 import { AlertCircle } from 'lucide-react';
 
@@ -12,11 +12,13 @@ function App() {
 
   // State for inputs
   const [masterResume, setMasterResume] = useState('');
+  const [masterCoverLetter, setMasterCoverLetter] = useState(''); // New state
   const [jobDescription, setJobDescription] = useState('');
+  const [docType, setDocType] = useState<DocumentType>('resume'); // New state
 
-  // New state for Provider + Model
+  // State for Provider + Model
   const [provider, setProvider] = useState<ProviderType>('gemini');
-  // Default to the first model of the default provider
+  // Default to Gemini 2.0 or 1.5 Pro
   const [modelId, setModelId] = useState<string>(MODELS.gemini[0].id);
 
   // State for output
@@ -28,6 +30,9 @@ function App() {
     setError(null);
     setIsGenerating(true);
 
+    // Select correct content based on doc type
+    const contentToProcess = docType === 'resume' ? masterResume : masterCoverLetter;
+
     try {
       const keys = getStoredKeys();
       if ((provider === 'gemini' && !keys.geminiKey) || (provider === 'perplexity' && !keys.perplexityKey)) {
@@ -35,8 +40,8 @@ function App() {
         throw new Error(`Please configure your ${provider === 'gemini' ? 'Gemini' : 'Perplexity'} API Key in settings.`);
       }
 
-      // Pass both provider and specific modelId
-      const result = await generateResume(masterResume, jobDescription, provider, modelId, keys);
+      // Pass docType to API
+      const result = await generateDocument(contentToProcess, jobDescription, provider, modelId, docType, keys);
       setGeneratedCode(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -65,8 +70,12 @@ function App() {
           <InputPanel
             masterResume={masterResume}
             setMasterResume={setMasterResume}
+            masterCoverLetter={masterCoverLetter}
+            setMasterCoverLetter={setMasterCoverLetter}
             jobDescription={jobDescription}
             setJobDescription={setJobDescription}
+            docType={docType}
+            setDocType={setDocType}
             provider={provider}
             setProvider={setProvider}
             modelId={modelId}
@@ -78,7 +87,10 @@ function App() {
 
         {/* Right Panel: Output */}
         <section className="h-full flex flex-col overflow-hidden">
-          <OutputPanel generatedCode={generatedCode} originalCode={masterResume} />
+          <OutputPanel
+            generatedCode={generatedCode}
+            originalCode={docType === 'resume' ? masterResume : masterCoverLetter}
+          />
         </section>
       </div>
     </Layout>

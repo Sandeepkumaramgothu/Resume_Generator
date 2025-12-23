@@ -1,31 +1,41 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ProviderType } from '../components/InputPanel';
 
-const SYSTEM_PROMPT = `You are a resume expert. Update the provided LaTeX code to tailor the experience bullet points to match the keywords in the Job Description. Do NOT change the LaTeX structure, preamble, or formatting. Only change the content text. Return ONLY the raw LaTeX code.`;
+export type DocumentType = 'resume' | 'cover_letter';
 
-export async function generateResume(
-    originalResume: string,
+const SYSTEM_PROMPT_RESUME = `You are a resume expert. Update the provided LaTeX code to tailor the experience bullet points to match the keywords in the Job Description. Do NOT change the LaTeX structure, preamble, or formatting. Only change the content text. Return ONLY the raw LaTeX code.`;
+
+const SYSTEM_PROMPT_COVER_LETTER = `You are an expert career coach and copywriter. Update the provided LaTeX Cover Letter to specifically address the Job Description. 
+1. rewriting the body paragraphs to connect the candidate's skills (implied from the JD) to the requirements.
+2. Keep the tone professional but persuasive.
+3. CRITICAL: Do NOT change the LaTeX structure, header, footer, or formatting commands. Only change the body text content.
+4. Return ONLY the raw LaTeX code.`;
+
+export async function generateDocument(
+    originalContent: string,
     jobDescription: string,
     provider: ProviderType,
     modelId: string,
+    docType: DocumentType,
     apiKeys: { geminiKey: string; perplexityKey: string }
 ): Promise<string> {
     const prompt = `
-    MASTER RESUME (LaTeX):
-    ${originalResume}
+    MASTER ${docType === 'resume' ? 'RESUME' : 'COVER LETTER'} (LaTeX):
+    ${originalContent}
 
     JOB DESCRIPTION:
     ${jobDescription}
   `;
 
+    const systemPrompt = docType === 'resume' ? SYSTEM_PROMPT_RESUME : SYSTEM_PROMPT_COVER_LETTER;
+
     if (provider === 'gemini') {
         if (!apiKeys.geminiKey) throw new Error('Gemini API Key is missing');
 
         const genAI = new GoogleGenerativeAI(apiKeys.geminiKey);
-        // Use the specific modelId selected by the user
         const modelInstance = genAI.getGenerativeModel({ model: modelId });
 
-        const result = await modelInstance.generateContent([SYSTEM_PROMPT, prompt]);
+        const result = await modelInstance.generateContent([systemPrompt, prompt]);
         const response = await result.response;
         const text = response.text();
 
@@ -42,12 +52,12 @@ export async function generateResume(
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: modelId, // Use the specific modelId (e.g. sonar-pro, sonar-reasoning)
+                model: modelId,
                 messages: [
-                    { role: "system", content: SYSTEM_PROMPT },
+                    { role: "system", content: systemPrompt },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.2,
+                temperature: 0.2, // Slightly higher for cover letters? Keep strict for LaTeX safety.
             })
         };
 
