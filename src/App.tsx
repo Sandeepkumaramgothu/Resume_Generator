@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { InputPanel, type ProviderType, MODELS } from './components/InputPanel';
 import { OutputPanel } from './components/OutputPanel';
+import { JobTrackerForm } from './components/JobTrackerForm';
 import { generateDocument, type DocumentType } from './services/api';
 import { getStoredKeys } from './lib/storage';
 import { AlertCircle } from 'lucide-react';
@@ -93,6 +94,8 @@ function App() {
           />
         </section>
       </div>
+
+      <JobTrackerForm />
     </Layout>
   );
 }
